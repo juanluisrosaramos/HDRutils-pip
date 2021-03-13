@@ -40,13 +40,15 @@ def get_metadata(files, color_space, wb):
 			raise Exception('Unable to read ISO. Check EXIF data.')
 
 		# Aperture formula from https://www.omnicalculator.com/physics/aperture-area
-		focal_length = float(Fraction(tags['EXIF FocalLength'].printable))
-		f_number = float(Fraction(tags['EXIF FNumber'].printable))
+		#focal_length = float(Fraction(tags['EXIF Focal Length'].printable))
+		focal_length = float(5.4)
+		#f_number = float(Fraction(tags['EXIF FNumber'].printable))
+		f_number = float(Fraction('1.9'))
 		data['aperture'][i] = np.pi * (focal_length / 2 / f_number)**2
 
 	# Get remaining data from rawpy
 	raw = rawpy.imread(files[0])
-	data['h'], data['w'] = raw.postprocess(user_flip=0).shape[:2]
+	data['h'], data['w'] = raw.postprocess().shape[:2]
 	data['black_level'] = np.array(raw.black_level_per_channel)
 	data['saturation_point'] = raw.white_level - 128	# We see artifacts without this offset
 	data['color_space'] = color_space
@@ -164,8 +166,8 @@ def imread_demosaic_merge(files, metadata, align):
 	HDR = (num / denom).astype(np.float32)
 
 	if num_sat > 0:
-		logger.warning(f'{num_sat/(metadata["h"]*metadata["w"]):.3f}% of pixels (n={num_sat}) are ' \
-			'saturated in the shortest exposure. The values for these pixels will be inaccurate.')
+		logger.warning(f"{num_sat/(metadata['h']*metadata['w']):.3f}% of pixels (n={num_sat}) are \
+			saturated in the shortest exposure. The values for those pixels will be inaccurate.")
 
 	return HDR
 
